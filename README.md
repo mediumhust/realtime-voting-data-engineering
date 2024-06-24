@@ -59,7 +59,8 @@ python voting.py
 4. Consuming the voting data from Kafka topic, enriching the data from Postgres and producing data to specific topics on Kafka:
 
 ```bash
-python spark-streaming.py
+docker exec -it realtime-voting-data-engineering_spark-master_1
+spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.0 --master spark://172.21.0.4:7077 jobs/spark-streaming.py
 ```
 
 5. Running the Streamlit app:
