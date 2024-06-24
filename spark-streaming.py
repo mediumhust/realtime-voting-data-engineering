@@ -13,9 +13,9 @@ if __name__ == "__main__":
              .appName("ElectionAnalysis")
              .master("local[*]")  # Use local Spark execution with all available cores
              .config("spark.jars.packages",
-                     "org.apache.spark:spark-sql-kafka-0-10_2.13:3.5.0")  # Spark-Kafka integration
+                     "org.apache.spark:spark-sql-kafka-0-10_2.12:3.4.0")  # Spark-Kafka integration
              .config("spark.jars",
-                     "/Users/airscholar/Dev/Projects/Python/Voting/postgresql-42.7.1.jar")  # PostgreSQL driver
+                     "/opt/bitnami/spark/jobs/postgresql-42.7.1.jar")  # PostgreSQL driver
              .config("spark.sql.adaptive.enabled", "false")  # Disable adaptive query execution
              .getOrCreate())
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     # Read data from Kafka 'votes_topic' and process it
     votes_df = spark.readStream \
         .format("kafka") \
-        .option("kafka.bootstrap.servers", "localhost:9092") \
+        .option("kafka.bootstrap.servers", "broker:29092") \
         .option("subscribe", "votes_topic") \
         .option("startingOffsets", "earliest") \
         .load() \
@@ -74,18 +74,18 @@ if __name__ == "__main__":
     votes_per_candidate_to_kafka = votes_per_candidate.selectExpr("to_json(struct(*)) AS value") \
         .writeStream \
         .format("kafka") \
-        .option("kafka.bootstrap.servers", "localhost:9092") \
+        .option("kafka.bootstrap.servers", "broker:29092") \
         .option("topic", "aggregated_votes_per_candidate") \
-        .option("checkpointLocation", "/Users/airscholar/Dev/Projects/Python/Voting/checkpoints/checkpoint1") \
+        .option("checkpointLocation", "/opt/bitnami/spark/jobs/checkpoint1") \
         .outputMode("update") \
         .start()
 
     turnout_by_location_to_kafka = turnout_by_location.selectExpr("to_json(struct(*)) AS value") \
         .writeStream \
         .format("kafka") \
-        .option("kafka.bootstrap.servers", "localhost:9092") \
+        .option("kafka.bootstrap.servers", "broker:29092") \
         .option("topic", "aggregated_turnout_by_location") \
-        .option("checkpointLocation", "/Users/airscholar/Dev/Projects/Python/Voting/checkpoints/checkpoint2") \
+        .option("checkpointLocation", "/opt/bitnami/spark/jobs/checkpoint2") \
         .outputMode("update") \
         .start()
 
